@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Theme Configurator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FFFFFF;
+  --surface: #F4F4F5;
+  --surface-plus: #E4E4E7;
+  --border: #E4E4E7;
+  --border-strong: #D4D4D8;
+  --text-primary: #18181B;
+  --text-secondary: #71717A;
+  --text-disabled: #A1A1AA;
+  --accent: #275864;
+  --accent-dim: #2563EB;
+  --accent-rgb: 59, 130, 246;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --section-padding: 32px;
+  --card-padding: 16px;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  --info: #2563EB;
+}
+
+body { font-family: var(--font-body); background: #F0F0F0; color: #18181B; line-height: 1.6; }
+
+/* Layout */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; background: #18181B; color: #FAFAFA;
+  position: sticky; top: 0; z-index: 100;
+}
+.app-header h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+.app-header .actions { display: flex; gap: 8px; }
+.header-btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
+}
+.header-btn-ghost { background: transparent; color: #A1A1AA; border-color: #3F3F46; }
+.header-btn-ghost:hover { background: #27272A; color: #FAFAFA; }
+.header-btn-confirm { background: #16A34A; color: white; }
+.header-btn-confirm:hover { filter: brightness(1.1); }
+
+.app { display: flex; height: calc(100vh - 44px); }
+
+/* Controls */
+.controls {
+  width: 340px; min-width: 340px; background: #FAFAFA;
+  border-right: 1px solid #E4E4E7; overflow-y: auto; padding: 16px;
+}
+.control-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #E4E4E7; }
+.control-section:last-child { border-bottom: none; }
+.control-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #71717A; margin-bottom: 8px;
+}
+
+/* Theme cards */
+.theme-list { display: flex; flex-direction: column; gap: 6px; }
+.theme-card {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  border: 1px solid #E4E4E7; transition: all 0.15s;
+  background: white;
+}
+.theme-card:hover { border-color: #A1A1AA; }
+.theme-card.active { border-color: #18181B; background: #F4F4F5; }
+.theme-card input { margin-top: 3px; accent-color: #18181B; }
+.theme-info { flex: 1; }
+.theme-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.theme-desc { font-size: 11px; color: #71717A; line-height: 1.4; }
+
+/* Adjustment radios */
+.adj-group { margin-bottom: 14px; }
+.adj-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #18181B; }
+.adj-options { display: flex; flex-direction: column; gap: 3px; }
+.adj-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; color: #3F3F46; transition: background 0.1s;
+}
+.adj-option:hover { background: #F4F4F5; }
+.adj-option input { accent-color: #18181B; }
+.adj-option.active { background: #F4F4F5; font-weight: 500; }
+
+/* Locked items */
+.locked-list { display: flex; flex-direction: column; gap: 4px; }
+.locked-item {
+  font-size: 11px; color: #A1A1AA; padding: 4px 8px;
+  background: #F4F4F5; border-radius: 4px;
+}
+.locked-item::before { content: "🔒 "; }
+
+/* Brand */
+.brand-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.brand-row label { font-size: 12px; color: #71717A; min-width: 70px; }
+.brand-row input[type="color"] {
+  width: 32px; height: 32px; border: 1px solid #E4E4E7;
+  border-radius: 6px; cursor: pointer; padding: 2px;
+}
+.brand-row input[type="text"] {
+  width: 90px; padding: 4px 8px; border: 1px solid #E4E4E7;
+  border-radius: 6px; font-size: 12px; font-family: var(--font-mono);
+}
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #3F3F46; }
+.toggle-row input { accent-color: #18181B; }
+
+/* Preview */
+.preview {
+  flex: 1; overflow-y: auto; padding: var(--section-padding);
+  background: var(--bg); color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
+}
+.preview-section { margin-bottom: var(--section-padding); }
+.section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-secondary);
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Preview components */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.flex-gap { display: flex; flex-wrap: wrap; gap: 8px; }
+.mt-16 { margin-top: 16px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  border: 1px solid transparent; transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
+.btn-secondary:hover { background: var(--accent); color: white; }
+.btn-ghost { background: transparent; color: var(--text-primary); border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+.btn-destructive { background: var(--error); color: white; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; transition: all 0.15s;
+}
+.card-img {
+  width: 100%; height: 120px;
+  background: var(--accent); opacity: 0.9;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 24px;
+}
+.card-body { padding: var(--card-padding); }
+.card-body h3 {
+  font-family: var(--font-heading); font-size: 16px; font-weight: 600; margin-bottom: 4px;
+}
+.card-body p { font-size: 13px; color: var(--text-secondary); }
+
+/* Form */
+.input-group { margin-bottom: 12px; }
+.input-label {
+  display: block; font-size: 13px; font-weight: 500;
+  margin-bottom: 4px; color: var(--text-primary);
+}
+.input {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 14px; font-family: var(--font-body);
+  background: var(--bg); color: var(--text-primary); transition: all 0.15s;
+}
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15); }
+.input-error { border-color: var(--error); }
+
+/* Badge */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--success); color: white; }
+.badge-warning { background: var(--warning); color: white; }
+.badge-error { background: var(--error); color: white; }
+.badge-info { background: var(--info); color: white; }
+
+/* Alert */
+.alert {
+  padding: 12px 16px; border-radius: var(--radius);
+  font-size: 13px; margin-bottom: 8px; border-left: 4px solid;
+}
+.alert-success { background: #f0fdf4; border-color: var(--success); color: #166534; }
+.alert-error { background: #fef2f2; border-color: var(--error); color: #991b1b; }
+
+/* Swatches */
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 60px; text-align: center; }
+.swatch-color { width: 60px; height: 40px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 4px; }
+.swatch-label { font-size: 10px; color: var(--text-secondary); }
+.swatch-hex { font-size: 9px; font-family: var(--font-mono); color: var(--text-disabled); }
+
+/* Nav preview */
+.nav-preview {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 20px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+.nav-logo { font-family: var(--font-heading); font-weight: 600; font-size: 15px; }
+.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 8px; border-radius: 4px; }
+.nav-link.active { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+
+/* JSON modal */
+.json-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+}
+.json-modal.show { display: flex; }
+.json-box {
+  background: white; border-radius: 12px; padding: 24px;
+  max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+}
+.json-box textarea {
+  width: 100%; height: 220px; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; padding: 12px; border: 1px solid #E4E4E7;
+  border-radius: 8px; resize: none; background: #F4F4F5;
+}
+
+/* ──────────────────────────── MOOD CLASSES ──────────────────────────── */
+
+/* Editorial Authority */
+.mood-editorial .btn { text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; padding: 10px 32px; font-size: 12px; }
+.mood-editorial .btn-primary { background: transparent; border: 1px solid var(--text-primary); color: var(--text-primary); }
+.mood-editorial .btn-primary:hover { background: var(--text-primary); color: var(--bg); }
+.mood-editorial .btn-secondary { border: 1px solid var(--border); color: var(--text-secondary); background: transparent; }
+.mood-editorial .btn-ghost { border: 1px solid var(--border); }
+.mood-editorial .btn-destructive { background: transparent; border: 1px solid var(--error); color: var(--error); }
+.mood-editorial h1 { font-size: 48px !important; font-weight: 300 !important; letter-spacing: -0.02em; line-height: 1.15 !important; }
+.mood-editorial h2 { font-size: 34px !important; font-weight: 300 !important; }
+.mood-editorial h3 { font-size: 20px !important; font-weight: 400 !important; }
+.mood-editorial p { font-size: 15px; line-height: 1.9; }
+.mood-editorial .preview-section { margin-bottom: 56px; }
+.mood-editorial .section-title { letter-spacing: 0.12em; font-size: 10px; margin-bottom: 24px; }
+.mood-editorial .card { border: none; }
+.mood-editorial .card-img { height: 140px; }
+.mood-editorial .card-body { padding: 24px; }
+.mood-editorial .input { padding: 12px 16px; font-size: 15px; background: transparent; }
+.mood-editorial .input:focus { box-shadow: none; }
+.mood-editorial .input-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.mood-editorial .badge { background: transparent !important; border: 1px solid currentColor; }
+.mood-editorial .badge-success { color: var(--success) !important; }
+.mood-editorial .badge-warning { color: var(--warning) !important; }
+.mood-editorial .badge-error { color: var(--error) !important; }
+.mood-editorial .badge-info { color: var(--info) !important; }
+.mood-editorial .alert { border-left: 2px solid; background: transparent; }
+.mood-editorial .nav-logo::before { content: none; }
+
+/* Brutalist Raw */
+.mood-brutalist * { border-radius: 0 !important; }
+.mood-brutalist .btn { border: 2px solid var(--text-primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 24px; }
+.mood-brutalist .btn-primary { background: var(--accent); border-color: var(--text-primary); color: var(--text-primary); box-shadow: 4px 4px 0 var(--text-primary); }
+.mood-brutalist .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--text-primary); }
+.mood-brutalist .btn-secondary { background: transparent; border: 2px solid var(--text-primary); color: var(--text-primary); box-shadow: 3px 3px 0 var(--text-primary); }
+.mood-brutalist .btn-ghost { border: 2px solid var(--text-primary); }
+.mood-brutalist .btn-destructive { border: 2px solid var(--text-primary); box-shadow: 4px 4px 0 var(--text-primary); }
+.mood-brutalist h1 { font-size: 56px !important; font-weight: 900 !important; text-transform: uppercase; letter-spacing: -0.03em; line-height: 1.0 !important; }
+.mood-brutalist h2 { font-size: 36px !important; font-weight: 800 !important; text-transform: uppercase; }
+.mood-brutalist .card { border: 2px solid var(--text-primary); box-shadow: 6px 6px 0 var(--text-primary); }
+.mood-brutalist .card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--text-primary); }
+.mood-brutalist .input { border: 2px solid var(--text-primary); }
+.mood-brutalist .input:focus { box-shadow: 4px 4px 0 var(--text-primary); }
+.mood-brutalist .badge { border: 2px solid currentColor; font-weight: 700; }
+.mood-brutalist .alert { border-left: 6px solid; }
+.mood-brutalist .nav-preview { border: 2px solid var(--text-primary); }
+
+/* Tech Precision */
+.mood-tech .btn { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.04em; border-radius: 4px !important; }
+.mood-tech .btn-primary { box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25); }
+.mood-tech .btn-primary:hover { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5); filter: brightness(1.1); }
+.mood-tech .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+.mood-tech .btn-secondary:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.2); }
+.mood-tech h1 { font-family: var(--font-mono) !important; font-size: 40px !important; font-weight: 600 !important; letter-spacing: -0.02em; }
+.mood-tech h2 { font-family: var(--font-mono) !important; font-size: 28px !important; font-weight: 600 !important; }
+.mood-tech h3 { font-family: var(--font-mono) !important; }
+.mood-tech .section-title { font-family: var(--font-mono); letter-spacing: 0.08em; }
+.mood-tech .card { border-radius: 4px !important; }
+.mood-tech .card:hover { border-color: var(--accent); }
+.mood-tech .card-img { display: none; }
+.mood-tech .card-body::before {
+  content: attr(data-label); display: block;
+  font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 8px;
+}
+.mood-tech .input { font-family: var(--font-mono); border-radius: 4px !important; }
+.mood-tech .input:focus { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15); }
+.mood-tech .input-label { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.mood-tech .badge { font-family: var(--font-mono); border-radius: 3px !important; }
+.mood-tech .alert { border-radius: 0 4px 4px 0 !important; font-family: var(--font-mono); font-size: 13px; }
+.mood-tech .nav-logo { font-family: var(--font-mono); }
+.mood-tech .nav-logo::before { content: "> "; color: var(--accent); }
+.mood-tech .nav-link { font-size: 13px; border-radius: 4px !important; }
+
+/* Organic Warm */
+.mood-organic .btn { border-radius: 24px !important; padding: 10px 28px; }
+.mood-organic .btn-primary { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.mood-organic h1 { font-size: 44px !important; font-weight: 400 !important; }
+.mood-organic h2 { font-size: 30px !important; font-weight: 400 !important; }
+.mood-organic .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.mood-organic .card-img { height: 140px; }
+.mood-organic .card-body { padding: 20px; }
+.mood-organic .input { padding: 12px 16px; }
+.mood-organic .nav-preview { border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+/* ── Retro Analog ── */
+.mood-retro h1 { font-size: 40px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: -0.01em; }
+.mood-retro h2 { font-size: 24px !important; font-weight: 700 !important; }
+.mood-retro .section-title { text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: 700; }
+.mood-retro .btn { font-weight: 700; border-radius: 4px !important; }
+.mood-retro .btn-primary { border: 2px solid rgba(0,0,0,0.1) !important; }
+.mood-retro .card { border: 2px solid var(--border-strong); }
+.mood-retro .card-img { height: 110px; }
+.mood-retro .input { border: 2px solid var(--border); border-radius: 4px !important; }
+.mood-retro .nav-preview { border-bottom: 3px solid var(--border-strong); }
+.mood-retro .badge { border-radius: 2px !important; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
+
+/* Retro: Noise */
+.retro-noise .preview {
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  background-size: 100% 4px;
+}
+.retro-noise .card {
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px);
+}
+
+/* Retro: Wear */
+.retro-fresh .card { box-shadow: 3px 3px 0 rgba(0,0,0,0.15) !important; }
+.retro-worn .preview { filter: saturate(0.75) contrast(0.95); }
+.retro-worn .card { box-shadow: 2px 2px 0 rgba(0,0,0,0.1) !important; border-style: solid !important; }
+.retro-worn .btn-primary { opacity: 0.9; }
+.retro-worn h1 { opacity: 0.88; }
+
+
+/* Luxury Minimal */
+.mood-luxury .preview-section { margin-bottom: 80px; }
+.mood-luxury .section-title { letter-spacing: 0.15em; font-size: 9px; margin-bottom: 32px; }
+.mood-luxury .btn { border-radius: 0 !important; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px; font-weight: 400; padding: 12px 40px; }
+.mood-luxury .btn-primary { background: transparent; border: 0.5px solid var(--text-primary); color: var(--text-primary); }
+.mood-luxury .btn-primary:hover { background: var(--text-primary); color: var(--bg); }
+.mood-luxury .btn-secondary { border: 0.5px solid var(--border); color: var(--text-secondary); background: transparent; }
+.mood-luxury .btn-ghost { border: 0.5px solid var(--border); }
+.mood-luxury .btn-destructive { background: transparent; border: 0.5px solid var(--error); color: var(--error); }
+.mood-luxury h1 { font-size: 56px !important; font-weight: 300 !important; letter-spacing: -0.03em; line-height: 1.1 !important; }
+.mood-luxury h2 { font-size: 32px !important; font-weight: 300 !important; letter-spacing: -0.02em; }
+.mood-luxury h3 { font-size: 16px !important; font-weight: 400 !important; letter-spacing: 0.02em; }
+.mood-luxury p { font-size: 14px; line-height: 2.0; }
+.mood-luxury .card { border: 0.5px solid var(--border); border-radius: 0 !important; }
+.mood-luxury .card-img { height: 160px; }
+.mood-luxury .card-body { padding: 28px; }
+.mood-luxury .input { border: 0.5px solid var(--border); border-radius: 0 !important; padding: 14px 18px; }
+.mood-luxury .input:focus { box-shadow: none; border-color: var(--text-primary); }
+.mood-luxury .input-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; }
+.mood-luxury .badge { border-radius: 0 !important; background: transparent !important; border: 0.5px solid currentColor; font-size: 10px; letter-spacing: 0.08em; }
+.mood-luxury .badge-success { color: var(--success) !important; }
+.mood-luxury .badge-warning { color: var(--warning) !important; }
+.mood-luxury .badge-error { color: var(--error) !important; }
+.mood-luxury .badge-info { color: var(--info) !important; }
+.mood-luxury .alert { border-left: 0.5px solid; background: transparent; border-radius: 0 !important; }
+.mood-luxury .nav-preview { border: 0.5px solid var(--border); border-radius: 0 !important; }
+
+/* Luxury: Gold material */
+.material-gold .mood-luxury .btn-primary { border-color: var(--accent); color: var(--accent); }
+.material-gold .mood-luxury .btn-primary:hover { background: var(--accent); color: #FFFFFF; }
+.material-gold .mood-luxury h1 { color: var(--accent) !important; }
+.material-gold .mood-luxury .card { border-color: rgba(var(--accent-rgb), 0.3); }
+.material-gold .mood-luxury .card-img { background: linear-gradient(135deg, #B8860B, #D4A843, #B8860B) !important; }
+.material-gold .mood-luxury .nav-link.active { color: var(--accent); }
+.material-gold .mood-luxury .section-title { color: var(--accent); }
+.material-gold .mood-luxury hr, .material-gold .mood-luxury .card::after { border-color: rgba(var(--accent-rgb), 0.2); }
+
+/* Luxury: Silver material */
+.material-silver .mood-luxury .btn-primary { border-color: var(--accent); color: var(--accent); }
+.material-silver .mood-luxury .btn-primary:hover { background: var(--accent); color: #18181B; }
+.material-silver .mood-luxury h1 { color: var(--accent) !important; }
+.material-silver .mood-luxury .card { border-color: rgba(var(--accent-rgb), 0.3); }
+.material-silver .mood-luxury .card-img { background: linear-gradient(135deg, #888, #C0C0C0, #888) !important; }
+.material-silver .mood-luxury .nav-link.active { color: var(--accent); }
+.material-silver .mood-luxury .section-title { color: var(--accent); }
+
+/* Neon Flux — 화려한 미래 UI, Tech Precision과 확실히 다르게 */
+.mood-neon .preview {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(var(--accent-rgb), 0.10) 0%, transparent 35%),
+    radial-gradient(circle at 70% 65%, rgba(var(--accent-rgb), 0.07) 0%, transparent 30%),
+    radial-gradient(circle at 15% 75%, rgba(var(--accent-rgb), 0.05) 0%, transparent 25%),
+    radial-gradient(ellipse at 20% 0%, rgba(var(--accent-rgb), 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(var(--accent-rgb), 0.08) 0%, transparent 50%),
+    var(--bg);
+}
+.mood-neon .btn { font-family: var(--font-heading); border-radius: 12px !important; letter-spacing: 0.03em; }
+.mood-neon .btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  color: #05050F; font-weight: 700;
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5), 0 0 60px rgba(var(--accent-rgb), 0.15), inset 0 1px 0 rgba(255,255,255,0.25);
+  border: none; text-shadow: 0 0 4px rgba(var(--accent-rgb), 0.3);
+}
+.mood-neon .btn-primary:hover {
+  box-shadow: 0 0 32px rgba(var(--accent-rgb), 0.7), 0 0 80px rgba(var(--accent-rgb), 0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+  transform: translateY(-2px); filter: brightness(1.15);
+}
+.mood-neon .btn-secondary {
+  background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.35);
+  color: var(--accent); backdrop-filter: blur(8px);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.1);
+}
+.mood-neon .btn-secondary:hover { background: rgba(var(--accent-rgb), 0.18); box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.3); }
+.mood-neon .btn-ghost { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); }
+.mood-neon .btn-ghost:hover { background: rgba(255,255,255,0.06); border-color: rgba(var(--accent-rgb), 0.2); }
+.mood-neon .btn-destructive { background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 0 16px rgba(239,68,68,0.4); border: none; }
+.mood-neon h1 {
+  font-family: var(--font-heading) !important; font-size: 48px !important; font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), #FFFFFF, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.3));
+}
+.mood-neon h2 {
+  font-family: var(--font-heading) !important; font-size: 30px !important; font-weight: 600 !important;
+  color: #FFFFFF !important; text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.3);
+}
+.mood-neon h3 { font-family: var(--font-heading) !important; }
+.mood-neon .card {
+  background: rgba(var(--accent-rgb), 0.04); border: 1px solid rgba(var(--accent-rgb), 0.15);
+  backdrop-filter: blur(16px); position: relative; overflow: hidden;
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.05);
+}
+.mood-neon .card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.5), transparent);
+}
+.mood-neon .card:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.2), 0 0 60px rgba(var(--accent-rgb), 0.05);
+}
+.mood-neon .card-img {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.25), transparent, rgba(var(--accent-rgb), 0.15)) !important;
+  position: relative;
+}
+.mood-neon .card-img::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.1), transparent);
+}
+.mood-neon .input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); }
+.mood-neon .input:focus { border-color: var(--accent); box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.3), 0 0 40px rgba(var(--accent-rgb), 0.08); }
+.mood-neon .badge { background: rgba(var(--accent-rgb), 0.12) !important; border: 1px solid rgba(var(--accent-rgb), 0.25); color: var(--accent) !important; box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.15); }
+.mood-neon .badge-success { background: rgba(74, 222, 128, 0.12) !important; border-color: rgba(74, 222, 128, 0.3); color: #4ADE80 !important; box-shadow: 0 0 8px rgba(74, 222, 128, 0.15); }
+.mood-neon .badge-warning { background: rgba(251, 191, 36, 0.12) !important; border-color: rgba(251, 191, 36, 0.3); color: #FBBF24 !important; box-shadow: 0 0 8px rgba(251, 191, 36, 0.15); }
+.mood-neon .badge-error { background: rgba(248, 113, 113, 0.12) !important; border-color: rgba(248, 113, 113, 0.3); color: #F87171 !important; box-shadow: 0 0 8px rgba(248, 113, 113, 0.15); }
+.mood-neon .badge-info { background: rgba(var(--accent-rgb), 0.12) !important; border-color: rgba(var(--accent-rgb), 0.3); color: var(--accent) !important; }
+.mood-neon .alert { background: rgba(255,255,255,0.02); border-left: 3px solid; backdrop-filter: blur(12px); border-radius: 12px !important; }
+.mood-neon .alert-success { border-color: #4ADE80; color: #4ADE80; background: rgba(74, 222, 128, 0.06); }
+.mood-neon .alert-error { border-color: #F87171; color: #F87171; background: rgba(248, 113, 113, 0.06); }
+.mood-neon .nav-preview {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(var(--accent-rgb), 0.1);
+  backdrop-filter: blur(16px); box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.05);
+}
+.mood-neon .nav-logo { color: var(--accent); text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4); font-weight: 700; }
+.mood-neon .nav-link.active { color: var(--accent); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.1); }
+.mood-neon .section-title { color: var(--accent); letter-spacing: 0.12em; font-family: var(--font-heading); text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.2); border-color: rgba(var(--accent-rgb), 0.15); }
+.mood-neon .swatch-color { box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.15); border-color: rgba(var(--accent-rgb), 0.2); }
+
+/* Playful Pop */
+.mood-pop .btn { border: 2.5px solid var(--text-primary); border-radius: 16px !important; font-weight: 700; font-family: var(--font-heading); padding: 10px 24px; box-shadow: 3px 3px 0 var(--text-primary); }
+.mood-pop .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--text-primary); }
+.mood-pop .btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--text-primary); }
+.mood-pop .btn-primary { background: var(--accent); color: white; }
+.mood-pop .btn-secondary { background: #06D6A0; color: var(--text-primary); }
+.mood-pop .btn-ghost { background: white; }
+.mood-pop .btn-destructive { background: #EF476F; border-color: var(--text-primary); }
+.mood-pop h1 { font-size: 48px !important; font-weight: 600 !important; line-height: 1.15 !important; }
+.mood-pop h2 { font-size: 32px !important; font-weight: 600 !important; }
+.mood-pop h3 { font-weight: 600 !important; }
+.mood-pop .card { border: 2.5px solid var(--text-primary); border-radius: 20px !important; box-shadow: 5px 5px 0 var(--text-primary); overflow: hidden; }
+.mood-pop .card:hover { transform: translate(-2px, -2px) rotate(-0.5deg); box-shadow: 7px 7px 0 var(--text-primary); }
+.mood-pop .card-img { border-radius: 0 !important; height: 100px; margin: 0; }
+.mood-pop .card-body { padding: 16px 20px; }
+.mood-pop .input { border: 2.5px solid var(--text-primary); border-radius: 14px !important; font-family: var(--font-body); }
+.mood-pop .input:focus { box-shadow: 3px 3px 0 var(--accent); border-color: var(--accent); }
+.mood-pop .badge { border: 2px solid var(--text-primary); border-radius: 12px !important; font-weight: 700; font-family: var(--font-heading); box-shadow: 2px 2px 0 var(--text-primary); }
+.mood-pop .badge-success { background: #06D6A0 !important; color: var(--text-primary) !important; }
+.mood-pop .badge-warning { background: #FFD166 !important; color: var(--text-primary) !important; }
+.mood-pop .badge-error { background: #EF476F !important; color: white !important; }
+.mood-pop .badge-info { background: #118AB2 !important; color: white !important; }
+.mood-pop .alert { border: 2.5px solid var(--text-primary); border-left: 6px solid; border-radius: 14px !important; box-shadow: 3px 3px 0 var(--text-primary); }
+.mood-pop .alert-success { background: #D4F8E8; color: #1A5C3A; }
+.mood-pop .alert-error { background: #FFE0E6; color: #8B1A3A; }
+.mood-pop .nav-preview { border: 2.5px solid var(--text-primary); border-radius: 16px !important; box-shadow: 3px 3px 0 var(--text-primary); }
+.mood-pop .nav-link { font-family: var(--font-heading); font-weight: 600; }
+.mood-pop .nav-link.active { color: var(--accent); background: rgba(var(--accent-rgb), 0.15); border-radius: 10px; }
+.mood-pop .section-title { font-family: var(--font-heading); font-weight: 600; letter-spacing: 0.06em; }
+
+/* Tech grid dots background */
+.mood-tech .preview {
+  background-image: radial-gradient(circle, rgba(var(--accent-rgb), 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ──────────────────── ADJUSTMENT EFFECT CLASSES ──────────────────── */
+
+/* Editorial: Texture */
+.texture-subtle .preview {
+  background-image:
+    linear-gradient(0deg, rgba(0,0,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+.texture-expressive .preview {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='2' fill='%23000' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 8px 8px;
+}
+.texture-expressive .card-img {
+  filter: grayscale(1) contrast(1.2);
+  mix-blend-mode: multiply;
+}
+
+/* Brutalist: Grid break */
+.grid-break-mild .grid-3 { gap: 16px; }
+.grid-break-mild .grid-3 .card:nth-child(2) { transform: translateY(8px); }
+
+.grid-break-full .grid-3 { gap: 8px; }
+.grid-break-full .grid-3 .card:nth-child(1) { transform: rotate(-1.5deg); z-index: 1; }
+.grid-break-full .grid-3 .card:nth-child(2) { transform: translateY(-12px) rotate(1deg); z-index: 2; }
+.grid-break-full .grid-3 .card:nth-child(3) { transform: rotate(-0.5deg) translateX(-8px); }
+.grid-break-full h1 { transform: rotate(-2deg) !important; }
+.grid-break-full .flex-gap { gap: 4px !important; }
+.grid-break-full .flex-gap .btn:nth-child(2) { transform: translateY(4px); }
+.grid-break-full .flex-gap .btn:nth-child(4) { transform: rotate(2deg); }
+
+/* Organic: Texture intensity */
+.organic-subtle .preview {
+  background-image:
+    linear-gradient(0deg, rgba(139,115,85,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,115,85,0.03) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(139,115,85,0.015) 1px, transparent 1px);
+  background-size: 6px 6px, 6px 6px, 8px 8px;
+}
+.organic-subtle .card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(139,115,85,0.06) !important;
+}
+.organic-tactile .preview {
+  background-image:
+    linear-gradient(0deg, rgba(139,115,85,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,115,85,0.06) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(139,115,85,0.035) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(139,115,85,0.025) 1px, transparent 1px);
+  background-size: 5px 5px, 5px 5px, 7px 7px, 9px 9px;
+}
+.organic-tactile .card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(139,115,85,0.12) !important;
+  background-image:
+    linear-gradient(0deg, rgba(139,115,85,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,115,85,0.04) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+.organic-tactile .btn {
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12) !important;
+}
+.organic-tactile .input {
+  border-width: 2px !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+/* Organic: Raw Paper — 거친 크래프트 종이 */
+.organic-raw-paper .preview {
+  background-color: #EDE4D3 !important;
+  background-image:
+    linear-gradient(0deg, rgba(101,78,50,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(101,78,50,0.07) 1px, transparent 1px),
+    linear-gradient(37deg, rgba(101,78,50,0.04) 1px, transparent 1px),
+    linear-gradient(127deg, rgba(101,78,50,0.04) 1px, transparent 1px),
+    linear-gradient(72deg, rgba(160,130,90,0.03) 2px, transparent 2px),
+    linear-gradient(160deg, rgba(80,60,35,0.025) 1px, transparent 1px);
+  background-size: 3px 3px, 3px 3px, 5px 5px, 7px 7px, 11px 11px, 13px 13px;
+}
+.organic-raw-paper .card {
+  background: rgba(237,228,211,0.85) !important;
+  border: 1px solid rgba(101,78,50,0.18) !important;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(101,78,50,0.08) !important;
+  background-image:
+    linear-gradient(0deg, rgba(101,78,50,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(101,78,50,0.04) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+.organic-raw-paper .btn {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+}
+.organic-raw-paper .btn-primary {
+  border: 2px solid rgba(0,0,0,0.12) !important;
+}
+.organic-raw-paper .input {
+  background: rgba(250,247,242,0.7) !important;
+  border: 2px solid rgba(101,78,50,0.2) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.08) !important;
+}
+.organic-raw-paper .nav-preview {
+  background: rgba(237,228,211,0.9) !important;
+  border-bottom: 2px solid rgba(101,78,50,0.15) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+.organic-raw-paper .alert {
+  background: rgba(237,228,211,0.7) !important;
+  border: 1px solid rgba(101,78,50,0.15) !important;
+}
+.organic-raw-paper .badge {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* Organic: Curve intensity */
+.curve-soft .card { border-radius: 12px !important; }
+.curve-soft .card-img { border-radius: 12px 12px 0 0 !important; }
+.curve-soft .btn { border-radius: 20px !important; }
+.curve-soft .input { border-radius: 10px !important; }
+.curve-soft .badge { border-radius: 16px !important; }
+.curve-soft .nav-preview { border-radius: 12px !important; }
+
+.curve-flowing .card { border-radius: 24px 8px 24px 8px !important; }
+.curve-flowing .card-img { border-radius: 24px 8px 0 0 !important; }
+.curve-flowing .btn { border-radius: 40% 60% 60% 40% / 50% !important; padding: 10px 32px; }
+.curve-flowing .input { border-radius: 16px !important; }
+.curve-flowing .badge { border-radius: 30px !important; }
+.curve-flowing .nav-preview { border-radius: 24px 8px 24px 8px !important; }
+.curve-flowing .alert { border-radius: 16px !important; }
+
+/* Luxury: Typo intensity */
+.typo-whisper h1 { font-size: 36px !important; font-weight: 200 !important; letter-spacing: 0.02em !important; }
+.typo-whisper h2 { font-size: 22px !important; font-weight: 200 !important; }
+.typo-whisper h3 { font-size: 14px !important; font-weight: 300 !important; letter-spacing: 0.05em !important; }
+.typo-whisper p { font-size: 13px !important; }
+.typo-whisper .btn { font-size: 10px !important; padding: 10px 36px !important; letter-spacing: 0.15em !important; }
+.typo-whisper .input-label { font-size: 8px !important; }
+.typo-whisper .section-title { font-size: 8px !important; }
+
+.typo-statement h1 { font-size: 80px !important; font-weight: 300 !important; letter-spacing: -0.04em !important; line-height: 1.0 !important; }
+.typo-statement h2 { font-size: 20px !important; font-weight: 300 !important; }
+.typo-statement h3 { font-size: 13px !important; font-weight: 400 !important; letter-spacing: 0.08em !important; text-transform: uppercase; }
+.typo-statement p { font-size: 13px !important; }
+.typo-statement .card-body h3 { font-size: 12px !important; }
+.typo-statement .section-title { font-size: 8px !important; letter-spacing: 0.2em !important; }
+
+/* Neon Flux: Glass intensity */
+.glass-subtle .mood-neon .card { background: rgba(255,255,255,0.04); backdrop-filter: blur(8px); }
+.glass-subtle .mood-neon .nav-preview { backdrop-filter: blur(8px); }
+
+.glass-heavy .mood-neon .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); }
+.glass-heavy .mood-neon .card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+.glass-heavy .mood-neon .card { position: relative; }
+.glass-heavy .mood-neon .nav-preview { backdrop-filter: blur(20px); background: rgba(255,255,255,0.06); }
+.glass-heavy .mood-neon .input { backdrop-filter: blur(16px); background: rgba(255,255,255,0.06); }
+
+/* Neon Flux: Pulse animation */
+@keyframes neonGlowPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3), 0 0 40px rgba(var(--accent-rgb), 0.1); }
+  50% { box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.6), 0 0 80px rgba(var(--accent-rgb), 0.2); }
+}
+@keyframes neonTextPulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3); opacity: 0.85; }
+  50% { text-shadow: 0 0 24px rgba(var(--accent-rgb), 0.7), 0 0 48px rgba(var(--accent-rgb), 0.3); opacity: 1; }
+}
+@keyframes neonBorderPulse {
+  0%, 100% { border-color: rgba(var(--accent-rgb), 0.2); }
+  50% { border-color: rgba(var(--accent-rgb), 0.5); }
+}
+.neon-pulse .mood-neon .btn-primary { animation: neonGlowPulse 3s ease-in-out infinite; }
+.neon-pulse .mood-neon .nav-link.active { animation: neonTextPulse 3s ease-in-out infinite; }
+.neon-pulse .mood-neon .card { animation: neonBorderPulse 4s ease-in-out infinite; }
+.neon-pulse .mood-neon .card:nth-child(2) { animation-delay: 1.3s; }
+.neon-pulse .mood-neon .card:nth-child(3) { animation-delay: 2.6s; }
+
+/* Playful Pop: Retro palette card images */
+.pop-candy .mood-pop .card:nth-child(1) .card-img { background: #EF476F !important; }
+.pop-candy .mood-pop .card:nth-child(2) .card-img { background: #06D6A0 !important; }
+.pop-candy .mood-pop .card:nth-child(3) .card-img { background: #118AB2 !important; }
+
+.pop-retro .mood-pop .card:nth-child(1) .card-img { background: #FF6B35 !important; }
+.pop-retro .mood-pop .card:nth-child(2) .card-img { background: #00B4D8 !important; }
+.pop-retro .mood-pop .card:nth-child(3) .card-img { background: #E63946 !important; }
+
+.pop-neon .mood-pop .card:nth-child(1) .card-img { background: #7B2FFF !important; }
+.pop-neon .mood-pop .card:nth-child(2) .card-img { background: #00F5D4 !important; }
+.pop-neon .mood-pop .card:nth-child(3) .card-img { background: #FEE440 !important; }
+
+/* Playful Pop: Energy level */
+.pop-chill .mood-pop .card { box-shadow: 4px 4px 0 var(--text-primary); }
+.pop-chill .mood-pop .btn { box-shadow: 2px 2px 0 var(--text-primary); }
+
+.pop-hyper .mood-pop .card { box-shadow: 6px 6px 0 var(--text-primary); }
+.pop-hyper .mood-pop .card:nth-child(1) { transform: rotate(-1.5deg); }
+.pop-hyper .mood-pop .card:nth-child(2) { transform: rotate(1deg) translateY(-6px); }
+.pop-hyper .mood-pop .card:nth-child(3) { transform: rotate(-0.5deg); }
+.pop-hyper .mood-pop h1 { transform: rotate(-1deg); }
+.pop-hyper .mood-pop .btn { box-shadow: 4px 4px 0 var(--text-primary); }
+.pop-hyper .mood-pop .flex-gap .btn:nth-child(2) { transform: rotate(2deg) translateY(-3px); }
+.pop-hyper .mood-pop .flex-gap .btn:nth-child(4) { transform: rotate(-1.5deg); }
+
+/* Playful Pop: Sticker decoration */
+.pop-sticker .mood-pop h1::after { content: ' ✨'; }
+.pop-sticker .mood-pop .card:nth-child(1) .card-body h3::before { content: '🎨 '; }
+.pop-sticker .mood-pop .card:nth-child(2) .card-body h3::before { content: '⚡ '; }
+.pop-sticker .mood-pop .card:nth-child(3) .card-body h3::before { content: '🚀 '; }
+.pop-sticker .mood-pop .alert-success::before { content: '🎉 '; }
+.pop-sticker .mood-pop .alert-error::before { content: '😱 '; }
+.pop-sticker .mood-pop .nav-logo::after { content: ' 🌈'; }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .app { flex-direction: column; height: auto; }
+  .controls { width: 100%; min-width: auto; border-right: none; border-bottom: 1px solid #E4E4E7; max-height: 50vh; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>🎨 Design Theme Configurator</h1>
+  <div class="actions">
+    <button class="header-btn header-btn-confirm" onclick="confirmDesign()">✓ 확정</button>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Controls -->
+  <div class="controls">
+    <!-- Theme -->
+    <div class="control-section">
+      <div class="control-label">Theme</div>
+      <div class="theme-list" id="themeList"></div>
+    </div>
+
+    <!-- Adjustments (dynamic) -->
+    <div class="control-section" id="adjustmentSection">
+      <div class="control-label">조정</div>
+      <div id="adjustmentControls"></div>
+    </div>
+
+    <!-- Locked -->
+    <div class="control-section">
+      <div class="control-label">잠금 (변경 불가)</div>
+      <div class="locked-list" id="lockedList"></div>
+    </div>
+
+    <!-- Options -->
+    <div class="control-section">
+      <div class="control-label">옵션</div>
+      <label class="toggle-row">
+        <input type="checkbox" id="darkModeToggle"> 다크모드 지원
+      </label>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview" id="previewArea">
+    <!-- Nav -->
+    <div class="preview-section">
+      <div class="section-title">Navigation</div>
+      <div class="nav-preview">
+        <span class="nav-logo">AppName</span>
+        <a class="nav-link active" href="#">대시보드</a>
+        <a class="nav-link" href="#">프로젝트</a>
+        <a class="nav-link" href="#">설정</a>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="preview-section">
+      <div class="section-title">Typography</div>
+      <h1 style="font-family:var(--font-heading);font-size:32px;font-weight:700;margin-bottom:8px">Heading Level 1 제목</h1>
+      <h2 style="font-family:var(--font-heading);font-size:24px;font-weight:600;margin-bottom:8px">Heading Level 2 부제목</h2>
+      <h3 style="font-family:var(--font-heading);font-size:18px;font-weight:600;margin-bottom:8px">Heading Level 3 소제목</h3>
+      <p style="margin-bottom:8px">본문 텍스트입니다. Body text for readability. 가독성을 확인하기 위한 한국어와 영문 텍스트.</p>
+      <code style="font-family:var(--font-mono);background:var(--surface);padding:2px 6px;border-radius:4px;font-size:13px">const config = { theme: 'custom' };</code>
+    </div>
+
+    <!-- Buttons -->
+    <div class="preview-section">
+      <div class="section-title">Buttons</div>
+      <div class="flex-gap">
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-ghost">Ghost</button>
+        <button class="btn btn-destructive">Destructive</button>
+        <button class="btn btn-primary" disabled>Disabled</button>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div class="preview-section">
+      <div class="section-title">Cards</div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-img">🎨</div>
+          <div class="card-body" data-label="DESIGN"><h3>디자인 시스템</h3><p>컬러, 타이포, 컴포넌트를 한 곳에서 관리합니다.</p></div>
+        </div>
+        <div class="card">
+          <div class="card-img" style="opacity:0.75">⚡</div>
+          <div class="card-body" data-label="DEVELOP"><h3>빠른 개발</h3><p>토큰 기반으로 일관된 UI를 빠르게 구축합니다.</p></div>
+        </div>
+        <div class="card">
+          <div class="card-img" style="opacity:0.6">🚀</div>
+          <div class="card-body" data-label="DEPLOY"><h3>프로덕션</h3><p>다크모드, 반응형, 접근성을 모두 지원합니다.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="preview-section">
+      <div class="section-title">Form</div>
+      <div class="grid-2">
+        <div>
+          <div class="input-group">
+            <label class="input-label">이름</label>
+            <input class="input" type="text" placeholder="이름을 입력하세요">
+          </div>
+          <div class="input-group">
+            <label class="input-label">이메일 (에러 상태)</label>
+            <input class="input input-error" type="email" value="invalid-email">
+            <span style="font-size:12px;color:var(--error);margin-top:2px;display:block">올바른 이메일 형식이 아닙니다.</span>
+          </div>
+        </div>
+        <div>
+          <div class="input-group">
+            <label class="input-label">메시지</label>
+            <textarea class="input" rows="3" placeholder="메시지를 입력하세요" style="resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="preview-section">
+      <div class="section-title">Status & Alerts</div>
+      <div class="flex-gap" style="margin-bottom:12px">
+        <span class="badge badge-success">✓ 성공</span>
+        <span class="badge badge-warning">⚠ 경고</span>
+        <span class="badge badge-error">✕ 에러</span>
+        <span class="badge badge-info">ℹ 정보</span>
+      </div>
+      <div class="alert alert-success">작업이 성공적으로 완료되었습니다.</div>
+      <div class="alert alert-error">오류가 발생했습니다. 다시 시도해주세요.</div>
+    </div>
+
+    <!-- Palette -->
+    <div class="preview-section">
+      <div class="section-title">Palette</div>
+      <div class="swatches" id="paletteSwatches"></div>
+    </div>
+  </div>
+</div>
+
+<!-- JSON modal -->
+<div class="json-modal" id="jsonModal">
+  <div class="json-box">
+    <h3 style="margin-bottom:12px">설정 확정</h3>
+    <p style="font-size:13px;color:#71717A;margin-bottom:12px">아래 JSON이 클립보드에 복사되었습니다. Claude Code로 돌아가서 붙여넣어 주세요.</p>
+    <textarea id="jsonOutput" readonly></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="header-btn header-btn-ghost" onclick="closeModal()" style="color:#71717A;border-color:#E4E4E7">닫기</button>
+      <button class="header-btn header-btn-confirm" onclick="copyJson()">📋 다시 복사</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────── PERSONALITY DATA ────────────────────────────
+
+const THEMES = {
+  'tech-precision': {
+    label: 'Tech Precision',
+    desc: '데이터가 미학이다. 모든 요소는 기능을 따른다.',
+    moodClass: 'mood-tech',
+    vars: {
+      bg: '#0A0E17', surface: '#111827', 'surface-plus': '#1F2937',
+      border: '#1F2937', 'border-strong': '#374151',
+      'text-primary': '#F9FAFB', 'text-secondary': '#9CA3AF', 'text-disabled': '#4B5563',
+      accent: '#00FF41', 'accent-dim': '#00CC33', 'accent-rgb': '0, 255, 65',
+      radius: '4px', shadow: 'none',
+      'font-heading': "'JetBrains Mono', monospace",
+      'font-body': "'Inter', sans-serif",
+      'font-mono': "'JetBrains Mono', monospace",
+      'section-padding': '48px', 'card-padding': '20px',
+    },
+    locked: ['모노스페이스 헤드라인 필수', 'glow만 허용 (박스 섀도 없음)', '0~2px 모서리 (4px까지 허용)', '애니메이션 없음 또는 타이핑 커서만'],
+    adjustments: [
+      { id: 'bg-mode', label: '1. 배경 모드', options: [
+        { value: 'dark', label: 'Dark — 딥 다크 배경 (개발 툴 느낌)', overrides: {
+          bg: '#0A0E17', surface: '#111827', 'surface-plus': '#1F2937',
+          border: '#1F2937', 'border-strong': '#374151',
+          'text-primary': '#F9FAFB', 'text-secondary': '#9CA3AF', 'text-disabled': '#4B5563',
+        }},
+        { value: 'light', label: 'Light — 흰 배경 + 그레이 그리드선', overrides: {
+          bg: '#F8FAFC', surface: '#FFFFFF', 'surface-plus': '#F1F5F9',
+          border: '#E2E8F0', 'border-strong': '#CBD5E1',
+          'text-primary': '#0F172A', 'text-secondary': '#64748B', 'text-disabled': '#94A3B8',
+        }},
+      ]},
+      { id: 'accent-color', label: '2. 포인트 색', options: [
+        { value: 'green', label: 'Terminal Green — 클래식 터미널', overrides: { accent: '#00FF41', 'accent-dim': '#00CC33', 'accent-rgb': '0, 255, 65' }},
+        { value: 'blue', label: 'Electric Blue — 데이터 시각화', overrides: { accent: '#275864', 'accent-dim': '#2563EB', 'accent-rgb': '59, 130, 246' }},
+        { value: 'amber', label: 'Amber — 레트로 모니터', overrides: { accent: '#F59E0B', 'accent-dim': '#D97706', 'accent-rgb': '245, 158, 11' }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'density', label: '3. 정보 밀도', options: [
+        { value: 'focused', label: 'Focused — 핵심만, 많은 여백', overrides: { 'section-padding': '64px', 'card-padding': '24px' }},
+        { value: 'dense', label: 'Dense — 대시보드처럼 빽빽하게', overrides: { 'section-padding': '32px', 'card-padding': '16px' }},
+      ]},
+    ],
+    fonts: ['JetBrains Mono', 'Inter'],
+  },
+
+  'neon-flux': {
+    label: 'Neon Flux',
+    desc: '미래에서 온 UI. 빛나는 네온, 글래스 표면, 그라데이션이 흐른다.',
+    moodClass: 'mood-neon',
+    vars: {
+      bg: '#05050F', surface: '#0A0A20', 'surface-plus': '#12123A',
+      border: '#1E1E55', 'border-strong': '#2D2D77',
+      'text-primary': '#F0F0FF', 'text-secondary': '#8899AA', 'text-disabled': '#444466',
+      accent: '#00F0FF', 'accent-dim': '#00BBCC', 'accent-rgb': '0, 240, 255',
+      radius: '16px', shadow: '0 0 30px rgba(0, 240, 255, 0.2)',
+      'font-heading': "'Space Grotesk', sans-serif",
+      'font-body': "'Inter', sans-serif",
+      'font-mono': "'JetBrains Mono', monospace",
+      'section-padding': '48px', 'card-padding': '24px',
+    },
+    locked: ['다크 배경 필수 (밝은 배경 금지)', 'Glow/Neon 그림자만 허용', '글래스모피즘 표면 필수', '그라데이션 accent 적극 사용'],
+    adjustments: [
+      { id: 'glow-color', label: '1. 네온 색상', options: [
+        { value: 'cyan', label: 'Cyan — 사이버펑크 클래식', overrides: { accent: '#00F0FF', 'accent-dim': '#00BBCC', 'accent-rgb': '0, 240, 255' }},
+        { value: 'magenta', label: 'Magenta — 핫 핑크 네온', overrides: { accent: '#FF00E5', 'accent-dim': '#CC00BB', 'accent-rgb': '255, 0, 229' }},
+        { value: 'lime', label: 'Lime — 매트릭스 그린', overrides: { accent: '#AAFF00', 'accent-dim': '#88CC00', 'accent-rgb': '170, 255, 0' }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'glass-intensity', label: '2. 글래스 강도', options: [
+        { value: 'subtle', label: 'Subtle — 은은한 반투명', cssClass: 'glass-subtle' },
+        { value: 'heavy', label: 'Heavy — 강한 블러 + 반사광', cssClass: 'glass-heavy' },
+      ]},
+      { id: 'animation', label: '3. 움직임', options: [
+        { value: 'static', label: 'Static — 정적, glow만', cssClass: '' },
+        { value: 'pulse', label: 'Pulse — 은은하게 숨 쉬는 glow', cssClass: 'neon-pulse' },
+      ]},
+    ],
+    fonts: ['Space Grotesk', 'Inter', 'JetBrains Mono'],
+  },
+
+  'editorial-authority': {
+    label: 'Editorial Authority',
+    desc: '절제된 권위감. 여백이 말하고, 타입이 구조를 만든다.',
+    moodClass: 'mood-editorial',
+    vars: {
+      bg: '#F8F9FA', surface: '#F0F2F5', 'surface-plus': '#E4E7EB',
+      border: '#D1D5DB', 'border-strong': '#9CA3AF',
+      'text-primary': '#111827', 'text-secondary': '#6B7280', 'text-disabled': '#9CA3AF',
+      accent: '#1A1AFF', 'accent-dim': '#1414CC', 'accent-rgb': '26, 26, 255',
+      radius: '2px', shadow: 'none',
+      'font-heading': "'Cormorant Garamond', serif",
+      'font-body': "'Inter', sans-serif",
+      'font-mono': "'IBM Plex Mono', monospace",
+      'section-padding': '56px', 'card-padding': '24px',
+    },
+    locked: ['세리프 헤드라인 + 산세리프 본문 (대비 필수)', '색상 메인 1색 + 포인트 1색 이하', 'Flat 또는 Hard shadow만'],
+    adjustments: [
+      { id: 'temperature', label: '1. 색온도', options: [
+        { value: 'warm', label: '따뜻하게 — 크림·세피아, 클래식하고 진중함', overrides: {
+          bg: '#FAF7F2', surface: '#F2EDE4', accent: '#8B2A2A', 'accent-dim': '#6B4226', 'accent-rgb': '139, 42, 42',
+          'text-primary': '#1A1208',
+        }},
+        { value: 'cool', label: '차갑게 — 블루·그레이, 날카롭고 현대적', overrides: {
+          bg: '#F8F9FA', surface: '#F0F2F5', accent: '#1A1AFF', 'accent-dim': '#1414CC', 'accent-rgb': '26, 26, 255',
+          'text-primary': '#0F1117',
+        }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true, overrides: {
+          bg: '#F8F9FA', surface: '#F0F2F5', 'text-primary': '#0F1117',
+        }},
+      ]},
+      { id: 'density', label: '2. 밀도', options: [
+        { value: 'airy', label: 'Airy — 넓은 여백, 요소가 숨 쉬는 느낌', overrides: { 'section-padding': '64px', 'card-padding': '32px' }},
+        { value: 'compact', label: 'Compact — 타이트한 그리드, 더 많은 정보', overrides: { 'section-padding': '32px', 'card-padding': '20px' }},
+      ]},
+      { id: 'texture', label: '3. 텍스처', options: [
+        { value: 'clean', label: 'Clean — 텍스처 없음, 완전히 플랫', cssClass: '' },
+        { value: 'subtle', label: 'Subtle — 미세한 노이즈 또는 그레인', cssClass: 'texture-subtle' },
+        { value: 'expressive', label: 'Expressive — 하프톤 또는 리소그래프 느낌', cssClass: 'texture-expressive' },
+      ]},
+    ],
+    fonts: ['Cormorant Garamond', 'Inter', 'IBM Plex Mono'],
+  },
+
+  'organic-warm': {
+    label: 'Organic Warm',
+    desc: '손의 온기. 스크린이지만 만질 수 있을 것 같은 느낌.',
+    moodClass: 'mood-organic',
+    vars: {
+      bg: '#FAF7F2', surface: '#F2EDE4', 'surface-plus': '#E8E0D2',
+      border: '#D5CCBD', 'border-strong': '#B8AA96',
+      'text-primary': '#2C1810', 'text-secondary': '#6B5B4E', 'text-disabled': '#A89888',
+      accent: '#C26B3B', 'accent-dim': '#A85A30', 'accent-rgb': '194, 107, 59',
+      radius: '16px', shadow: '0 2px 12px rgba(0,0,0,0.06)',
+      'font-heading': "'Lora', serif",
+      'font-body': "'Source Sans 3', sans-serif",
+      'font-mono': "'IBM Plex Mono', monospace",
+      'section-padding': '48px', 'card-padding': '20px',
+    },
+    locked: ['손글씨 느낌의 세리프 또는 인쇄체', '따뜻한 색상의 subtle shadow', '정렬보다 흐름 우선 (완벽한 열 정렬 금지)'],
+    adjustments: [
+      { id: 'texture', label: '1. 질감 강도', options: [
+        { value: 'subtle', label: 'Subtle — 아주 미세한 종이 느낌', cssClass: 'organic-subtle' },
+        { value: 'tactile', label: 'Tactile — 확실히 느껴지는 질감', cssClass: 'organic-tactile' },
+        { value: 'raw-paper', label: 'Raw Paper — 거친 크래프트 종이', cssClass: 'organic-raw-paper' },
+      ]},
+      { id: 'palette', label: '2. 색 팔레트', options: [
+        { value: 'cream-ink', label: 'Cream & Ink — 크림 배경 + 진한 잉크색', overrides: {
+          bg: '#FAF7F2', surface: '#F2EDE4', 'text-primary': '#1A1208', accent: '#1A1208', 'accent-dim': '#2C1810', 'accent-rgb': '26, 18, 8',
+        }},
+        { value: 'earth', label: 'Earth — 테라코타·올리브·베이지', overrides: {
+          bg: '#F5EDE0', surface: '#ECE2D0', accent: '#C26B3B', 'accent-dim': '#A85A30', 'accent-rgb': '194, 107, 59',
+          'text-primary': '#3D2B1F',
+        }},
+        { value: 'sage', label: 'Sage — 세이지 그린 + 오프화이트', overrides: {
+          bg: '#F2F5EC', surface: '#E8EDDF', accent: '#5F7A5E', 'accent-dim': '#4D654C', 'accent-rgb': '95, 122, 94',
+          'text-primary': '#2C3B2A', border: '#C5CEB8',
+        }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'curve', label: '3. 곡선 강도', options: [
+        { value: 'soft', label: 'Soft — 살짝 둥근 모서리 (8~16px)', overrides: { radius: '12px' }, cssClass: 'curve-soft' },
+        { value: 'flowing', label: 'Flowing — 유기적 곡선, 물방울 형태', overrides: { radius: '24px' }, cssClass: 'curve-flowing' },
+      ]},
+    ],
+    fonts: ['Lora', 'Source Sans 3', 'IBM Plex Mono'],
+  },
+
+  'luxury-minimal': {
+    label: 'Luxury Minimal',
+    desc: '있는 듯 없는 듯. 침묵이 럭셔리다.',
+    moodClass: 'mood-luxury',
+    vars: {
+      bg: '#FFFFFF', surface: '#FAFAFA', 'surface-plus': '#F5F5F5',
+      border: '#E5E5E5', 'border-strong': '#D4D4D4',
+      'text-primary': '#171717', 'text-secondary': '#737373', 'text-disabled': '#A3A3A3',
+      accent: '#B8860B', 'accent-dim': '#996F00', 'accent-rgb': '184, 134, 11',
+      radius: '0px', shadow: 'none',
+      'font-heading': "'Cormorant', serif",
+      'font-body': "'Inter', sans-serif",
+      'font-mono': "'IBM Plex Mono', monospace",
+      'section-padding': '80px', 'card-padding': '28px',
+    },
+    locked: ['얇은 세리프 필수 (Light ~ Regular weight만)', '최소 섹션 패딩 120px (타협 없음)', '색상 2색 이하', '애니메이션 없음 또는 아주 느린 페이드만'],
+    adjustments: [
+      { id: 'background', label: '1. 배경', options: [
+        { value: 'white', label: 'Pure White — 순백, 아무것도 없는 캔버스', overrides: {
+          bg: '#FFFFFF', surface: '#FAFAFA', 'surface-plus': '#F5F5F5',
+          'text-primary': '#171717', 'text-secondary': '#737373',
+          border: '#E5E5E5',
+        }},
+        { value: 'off-black', label: 'Off-Black — 거의 검정 (#0A0A0A)', overrides: {
+          bg: '#0A0A0A', surface: '#141414', 'surface-plus': '#1F1F1F',
+          'text-primary': '#FAFAFA', 'text-secondary': '#A3A3A3', 'text-disabled': '#525252',
+          border: '#262626', 'border-strong': '#404040',
+        }},
+      ]},
+      { id: 'accent-material', label: '2. 포인트 소재', options: [
+        { value: 'gold', label: 'Gold — 얇은 골드 선, 골드 텍스트', overrides: { accent: '#B8860B', 'accent-dim': '#996F00', 'accent-rgb': '184, 134, 11' }, cssClass: 'material-gold' },
+        { value: 'silver', label: 'Silver — 차가운 실버, 메탈릭', overrides: { accent: '#A8A8A8', 'accent-dim': '#888888', 'accent-rgb': '168, 168, 168' }, cssClass: 'material-silver' },
+        { value: 'none', label: 'No accent — 타이포만으로 위계 표현', overrides: { accent: '#171717', 'accent-dim': '#404040', 'accent-rgb': '23, 23, 23' }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true, cssClass: 'material-gold' },
+      ]},
+      { id: 'typo-intensity', label: '3. 타이포 강도', options: [
+        { value: 'whisper', label: 'Whisper — 아주 얇고 작게, 있는 듯 없는 듯', cssClass: 'typo-whisper' },
+        { value: 'statement', label: 'Statement — 하나만 크게, 나머지는 아주 작게', cssClass: 'typo-statement' },
+      ]},
+    ],
+    fonts: ['Cormorant', 'Inter', 'IBM Plex Mono'],
+  },
+
+  'brutalist-raw': {
+    label: 'Brutalist Raw',
+    desc: '날것의 충격. 규칙을 알고 의도적으로 깬다.',
+    moodClass: 'mood-brutalist',
+    vars: {
+      bg: '#FFFFFF', surface: '#F5F5F5', 'surface-plus': '#E5E5E5',
+      border: '#000000', 'border-strong': '#000000',
+      'text-primary': '#000000', 'text-secondary': '#333333', 'text-disabled': '#999999',
+      accent: '#FF0000', 'accent-dim': '#CC0000', 'accent-rgb': '255, 0, 0',
+      radius: '0px', shadow: '6px 6px 0 #000000',
+      'font-heading': "'Oswald', sans-serif",
+      'font-body': "'Inter', sans-serif",
+      'font-mono': "'JetBrains Mono', monospace",
+      'section-padding': '32px', 'card-padding': '16px',
+    },
+    locked: ['Hard shadow만 (4px~8px solid, blur 없음)', '굵은 solid border (2px 이상)', '임팩트 있는 굵은 산세리프', '0px 모서리 (완전한 직각)'],
+    adjustments: [
+      { id: 'background', label: '1. 배경', options: [
+        { value: 'white', label: '백지 위 — 흰 배경, 검은 요소가 충돌', overrides: {
+          bg: '#FFFFFF', surface: '#F5F5F5', 'text-primary': '#000000', 'text-secondary': '#333333', border: '#000000',
+        }},
+        { value: 'inverted', label: '역전 — 검은 배경, 흰/원색 요소', overrides: {
+          bg: '#000000', surface: '#111111', 'surface-plus': '#222222',
+          'text-primary': '#FFFFFF', 'text-secondary': '#CCCCCC', 'text-disabled': '#666666',
+          border: '#FFFFFF', 'border-strong': '#FFFFFF',
+        }},
+      ]},
+      { id: 'accent-type', label: '2. 포인트 색', options: [
+        { value: 'red', label: '빨강 — Raw Red', overrides: { accent: '#FF0000', 'accent-dim': '#CC0000', 'accent-rgb': '255, 0, 0' }},
+        { value: 'yellow', label: '노랑 — Electric Yellow', overrides: { accent: '#FFE600', 'accent-dim': '#CCCC00', 'accent-rgb': '255, 230, 0' }},
+        { value: 'blue', label: '파랑 — Brutal Blue', overrides: { accent: '#0000FF', 'accent-dim': '#0000CC', 'accent-rgb': '0, 0, 255' }},
+        { value: 'mono', label: '무채색만 — 흑백으로만 승부', overrides: { accent: '#000000', 'accent-dim': '#333333', 'accent-rgb': '0, 0, 0' }},
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'grid-break', label: '3. 그리드 파괴 강도', options: [
+        { value: 'mild', label: 'Mild — 의도적 비대칭이지만 읽기 편함', cssClass: 'grid-break-mild' },
+        { value: 'full', label: 'Full — 요소가 겹치고, 넘치고, 깨짐', cssClass: 'grid-break-full' },
+      ]},
+    ],
+    fonts: ['Oswald', 'Inter', 'JetBrains Mono'],
+  },
+
+  'retro-analog': {
+    label: 'Retro Analog',
+    desc: '카세트테이프 감기는 소리. 빛바랜 색감과 노이즈의 향수.',
+    moodClass: 'mood-retro',
+    vars: {
+      bg: '#F2E8D5', surface: '#EBE0CA', 'surface-plus': '#E0D4BA',
+      border: '#C8B898', 'border-strong': '#A89878',
+      'text-primary': '#2A2218', 'text-secondary': '#6B5E4A', 'text-disabled': '#A89880',
+      accent: '#D45B3A', 'accent-dim': '#B84A2E', 'accent-rgb': '212, 91, 58',
+      radius: '4px', shadow: '3px 3px 0 rgba(0,0,0,0.15)',
+      'font-heading': "'Space Mono', monospace",
+      'font-body': "'IBM Plex Sans', sans-serif",
+      'font-mono': "'Space Mono', monospace",
+      'section-padding': '44px', 'card-padding': '20px',
+    },
+    locked: ['모노스페이스 또는 슬래브 세리프 헤드라인', '채도 낮은 빛바랜 색감', 'CRT/노이즈 텍스처 허용', 'offset shadow만 (blur shadow 금지)'],
+    adjustments: [
+      { id: 'era', label: '1. 시대', options: [
+        { value: '70s', label: '70s — 오렌지·브라운·머스터드', overrides: {
+          accent: '#D45B3A', 'accent-dim': '#B84A2E', 'accent-rgb': '212, 91, 58',
+          bg: '#F2E8D5', surface: '#EBE0CA',
+        }, cssClass: 'retro-70s' },
+        { value: '80s', label: '80s — 틸·핫핑크·퍼플 (CRT 감성)', overrides: {
+          accent: '#E84393', 'accent-dim': '#C83080', 'accent-rgb': '232, 67, 147',
+          bg: '#1A1A2E', surface: '#222244', 'surface-plus': '#2A2A55',
+          'text-primary': '#E8E8F0', 'text-secondary': '#8888AA', 'text-disabled': '#555566',
+          border: '#333355', 'border-strong': '#444477',
+        }, cssClass: 'retro-80s' },
+        { value: '90s', label: '90s — 틸·베이지·와인, 그런지', overrides: {
+          accent: '#2D8C7F', 'accent-dim': '#247568', 'accent-rgb': '45, 140, 127',
+          bg: '#EDE5D8', surface: '#E4DBCC',
+        }, cssClass: 'retro-90s' },
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'noise', label: '2. 노이즈', options: [
+        { value: 'static', label: 'Static — CRT 스캔라인 + 노이즈', cssClass: 'retro-noise' },
+        { value: 'clean', label: 'Clean — 노이즈 없음', cssClass: '' },
+      ]},
+      { id: 'wear', label: '3. 낡은 정도', options: [
+        { value: 'worn', label: 'Worn — 빛바래고 긁힌 느낌', cssClass: 'retro-worn' },
+        { value: 'fresh', label: 'Fresh — 새것 같은 레트로', cssClass: 'retro-fresh' },
+      ]},
+    ],
+    fonts: ['Space Mono', 'IBM Plex Sans'],
+  },
+
+  'playful-pop': {
+    label: 'Playful Pop',
+    desc: '진지함은 넣어둬! 컬러풀하고 귀엽고 재밌는 팝아트 에너지.',
+    moodClass: 'mood-pop',
+    vars: {
+      bg: '#FFF8E7', surface: '#FFFFFF', 'surface-plus': '#FFF0CC',
+      border: '#FFD166', 'border-strong': '#FF9F1C',
+      'text-primary': '#2B2D42', 'text-secondary': '#555B6E', 'text-disabled': '#A0A4B8',
+      accent: '#EF476F', 'accent-dim': '#D63A5C', 'accent-rgb': '239, 71, 111',
+      radius: '20px', shadow: '4px 4px 0 #2B2D42',
+      'font-heading': "'Fredoka', sans-serif",
+      'font-body': "'Nunito', sans-serif",
+      'font-mono': "'JetBrains Mono', monospace",
+      'section-padding': '40px', 'card-padding': '20px',
+    },
+    locked: ['밝고 따뜻한 배경 필수', '둥근 모서리 16px 이상', '최소 3색 이상 사용', 'Hard shadow + 굵은 border'],
+    adjustments: [
+      { id: 'palette', label: '1. 컬러 무드', options: [
+        { value: 'candy', label: 'Candy — 핑크·옐로·민트, 사탕처럼 달콤한', overrides: {
+          accent: '#EF476F', 'accent-dim': '#D63A5C', 'accent-rgb': '239, 71, 111',
+          bg: '#FFF8E7', border: '#FFD166',
+        }, cssClass: 'pop-candy' },
+        { value: 'retro', label: 'Retro — 오렌지·틸·레드, 70s 팝 느낌', overrides: {
+          accent: '#FF6B35', 'accent-dim': '#E55A2B', 'accent-rgb': '255, 107, 53',
+          bg: '#FFF5EC', border: '#FF9F1C', 'text-primary': '#1A1A2E',
+        }, cssClass: 'pop-retro' },
+        { value: 'neon-pop', label: 'Neon Pop — 형광 컬러, 파티 모드', overrides: {
+          accent: '#7B2FFF', 'accent-dim': '#6320DD', 'accent-rgb': '123, 47, 255',
+          bg: '#F5F0FF', border: '#C77DFF', 'text-primary': '#1A1A2E',
+        }, cssClass: 'pop-neon' },
+        { value: 'brand', label: '브랜드 컬러', brandInput: true },
+      ]},
+      { id: 'energy', label: '2. 에너지 레벨', options: [
+        { value: 'chill', label: 'Chill — 귀엽지만 차분하게', cssClass: 'pop-chill' },
+        { value: 'hyper', label: 'Hyper — 요소가 튀어나올 듯!', cssClass: 'pop-hyper' },
+      ]},
+      { id: 'decoration', label: '3. 장식', options: [
+        { value: 'minimal', label: 'Minimal — 컬러만으로 표현', cssClass: '' },
+        { value: 'sticker', label: 'Sticker — 이모지 + 스티커 느낌', cssClass: 'pop-sticker' },
+      ]},
+    ],
+    fonts: ['Fredoka', 'Nunito', 'JetBrains Mono'],
+  },
+};
+
+// ──────────────────────────── STATE ────────────────────────────
+
+let currentTheme = 'tech-precision';
+let currentAdjustments = {};
+let brandColors = {}; // key: 'theme:adjId', value: hex
+let darkMode = false;
+let loadedFonts = new Set();
+
+// ──────────────────────────── FONT LOADING ────────────────────────────
+
+function loadFont(name) {
+  if (loadedFonts.has(name)) return;
+  loadedFonts.add(name);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${name.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`;
+  document.head.appendChild(link);
+}
+
+// ──────────────────────────── RENDER CONTROLS ────────────────────────────
+
+function renderThemeList() {
+  const container = document.getElementById('themeList');
+  container.innerHTML = Object.entries(THEMES).map(([key, p]) => `
+    <label class="theme-card ${key === currentTheme ? 'active' : ''}">
+      <input type="radio" name="theme" value="${key}" ${key === currentTheme ? 'checked' : ''}>
+      <div class="theme-info">
+        <div class="theme-name">${p.label}</div>
+        <div class="theme-desc">${p.desc}</div>
+      </div>
+    </label>
+  `).join('');
+
+  container.querySelectorAll('input[name="theme"]').forEach(r => {
+    r.addEventListener('change', () => {
+      currentTheme = r.value;
+      currentAdjustments = {};
+      // Set default adjustments (first option)
+      const p = THEMES[currentTheme];
+      p.adjustments.forEach(adj => { currentAdjustments[adj.id] = adj.options[0].value; });
+      renderAll();
+    });
+  });
+}
+
+function renderAdjustments() {
+  const p = THEMES[currentTheme];
+  const container = document.getElementById('adjustmentControls');
+
+  container.innerHTML = p.adjustments.map(adj => `
+    <div class="adj-group">
+      <div class="adj-label">${adj.label}</div>
+      <div class="adj-options">
+        ${adj.options.map(opt => {
+          const isSelected = (currentAdjustments[adj.id] || adj.options[0].value) === opt.value;
+          if (opt.brandInput) {
+            const savedColor = brandColors[currentTheme + ':' + adj.id] || '#275864';
+            return `
+              <label class="adj-option ${isSelected ? 'active' : ''}">
+                <input type="radio" name="adj-${adj.id}" value="${opt.value}" ${isSelected ? 'checked' : ''}>
+                ${opt.label}
+                <input type="color" class="brand-color-pick" data-adj="${adj.id}" value="${savedColor}" style="width:24px;height:24px;border:1px solid #E4E4E7;border-radius:4px;cursor:pointer;padding:1px;margin-left:4px">
+                <input type="text" class="brand-color-hex" data-adj="${adj.id}" value="${savedColor}" style="width:72px;padding:2px 6px;border:1px solid #E4E4E7;border-radius:4px;font-size:11px;font-family:var(--font-mono)">
+              </label>`;
+          }
+          return `
+            <label class="adj-option ${isSelected ? 'active' : ''}">
+              <input type="radio" name="adj-${adj.id}" value="${opt.value}" ${isSelected ? 'checked' : ''}>
+              ${opt.label}
+            </label>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  p.adjustments.forEach(adj => {
+    container.querySelectorAll(`input[name="adj-${adj.id}"]`).forEach(r => {
+      r.addEventListener('change', () => {
+        currentAdjustments[adj.id] = r.value;
+        applyPreview();
+        r.closest('.adj-options').querySelectorAll('.adj-option').forEach(o => o.classList.remove('active'));
+        r.closest('.adj-option').classList.add('active');
+      });
+    });
+  });
+
+  // Brand color pick/hex events
+  container.querySelectorAll('.brand-color-pick').forEach(pick => {
+    pick.addEventListener('input', e => {
+      const adjId = e.target.dataset.adj;
+      const key = currentTheme + ':' + adjId;
+      brandColors[key] = e.target.value;
+      const hex = e.target.closest('.adj-option').querySelector('.brand-color-hex');
+      if (hex) hex.value = e.target.value;
+      // Auto-select this radio
+      const radio = e.target.closest('.adj-option').querySelector('input[type="radio"]');
+      if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+      else applyPreview();
+    });
+  });
+  container.querySelectorAll('.brand-color-hex').forEach(hex => {
+    hex.addEventListener('change', e => {
+      if (!/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) return;
+      const adjId = e.target.dataset.adj;
+      const key = currentTheme + ':' + adjId;
+      brandColors[key] = e.target.value;
+      const pick = e.target.closest('.adj-option').querySelector('.brand-color-pick');
+      if (pick) pick.value = e.target.value;
+      const radio = e.target.closest('.adj-option').querySelector('input[type="radio"]');
+      if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+      else applyPreview();
+    });
+  });
+}
+
+function renderLocked() {
+  const p = THEMES[currentTheme];
+  const container = document.getElementById('lockedList');
+  container.innerHTML = p.locked.map(item => `<div class="locked-item">${item}</div>`).join('');
+}
+
+// ──────────────────────────── APPLY PREVIEW ────────────────────────────
+
+function applyPreview() {
+  const p = THEMES[currentTheme];
+  const root = document.documentElement;
+
+  // Load fonts
+  p.fonts.forEach(f => loadFont(f));
+
+  // Apply base vars
+  Object.entries(p.vars).forEach(([key, val]) => {
+    root.style.setProperty(`--${key}`, val);
+  });
+
+  // Apply adjustment overrides
+  p.adjustments.forEach(adj => {
+    const selected = currentAdjustments[adj.id] || adj.options[0].value;
+    const option = adj.options.find(o => o.value === selected);
+    if (option && option.overrides) {
+      Object.entries(option.overrides).forEach(([key, val]) => {
+        root.style.setProperty(`--${key}`, val);
+      });
+    }
+    // Brand color: apply user-picked hex as accent
+    if (option && option.brandInput) {
+      const key = currentTheme + ':' + adj.id;
+      const hex = brandColors[key] || '#275864';
+      root.style.setProperty('--accent', hex);
+      const r = parseInt(hex.slice(1,3), 16);
+      const g = parseInt(hex.slice(3,5), 16);
+      const b = parseInt(hex.slice(5,7), 16);
+      root.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+      root.style.setProperty('--accent-dim', hex);
+    }
+  });
+
+  // Mood class + adjustment CSS classes
+  const app = document.querySelector('.app');
+  // Remove all effect classes from app
+  app.className = 'app';
+
+  const preview = document.getElementById('previewArea');
+  preview.className = 'preview';
+  preview.classList.add(p.moodClass);
+
+  // Apply cssClass from selected adjustments
+  p.adjustments.forEach(adj => {
+    const selected = currentAdjustments[adj.id] || adj.options[0].value;
+    const option = adj.options.find(o => o.value === selected);
+    if (option && option.cssClass) {
+      app.classList.add(option.cssClass);
+    }
+  });
+
+  // Body background — Neon Flux pin spotlight
+  if (currentTheme === 'neon-flux') {
+    const rgb = root.style.getPropertyValue('--accent-rgb') || '0, 240, 255';
+    document.body.style.background = 'radial-gradient(circle at 25% 20%, rgba(' + rgb + ', 0.12) 0%, transparent 40%), radial-gradient(circle at 75% 55%, rgba(' + rgb + ', 0.09) 0%, transparent 35%), radial-gradient(circle at 50% 85%, rgba(' + rgb + ', 0.07) 0%, transparent 30%), #08081A';
+  } else {
+    document.body.style.background = '#F0F0F0';
+  }
+
+  // Update theme cards active state
+  document.querySelectorAll('.theme-card').forEach(card => {
+    const input = card.querySelector('input');
+    card.classList.toggle('active', input.value === currentTheme);
+  });
+
+  renderSwatches();
+}
+
+function renderSwatches() {
+  const root = document.documentElement;
+  const getVar = name => getComputedStyle(root).getPropertyValue(`--${name}`).trim();
+
+  const colors = [
+    { label: 'BG', prop: 'bg' },
+    { label: 'Surface', prop: 'surface' },
+    { label: 'Border', prop: 'border' },
+    { label: 'Text', prop: 'text-primary' },
+    { label: 'Text 2nd', prop: 'text-secondary' },
+    { label: 'Accent', prop: 'accent' },
+    { label: 'Success', prop: 'success' },
+    { label: 'Warning', prop: 'warning' },
+    { label: 'Error', prop: 'error' },
+  ];
+
+  document.getElementById('paletteSwatches').innerHTML = colors.map(c => {
+    const val = getVar(c.prop);
+    return `<div class="swatch">
+      <div class="swatch-color" style="background:${val}"></div>
+      <div class="swatch-label">${c.label}</div>
+      <div class="swatch-hex">${val}</div>
+    </div>`;
+  }).join('');
+}
+
+// ──────────────────────────── BRAND & DARK MODE ────────────────────────────
+
+document.getElementById('darkModeToggle').addEventListener('change', e => {
+  darkMode = e.target.checked;
+});
+
+// ──────────────────────────── CONFIRM ────────────────────────────
+
+function confirmDesign() {
+  const p = THEMES[currentTheme];
+  const adjValues = {};
+  p.adjustments.forEach(adj => {
+    adjValues[adj.id] = currentAdjustments[adj.id] || adj.options[0].value;
+  });
+
+  // Find brand color if a brand option is selected
+  let activeBrandColor = null;
+  p.adjustments.forEach(adj => {
+    const selected = adjValues[adj.id];
+    const option = adj.options.find(o => o.value === selected);
+    if (option && option.brandInput) {
+      const key = currentTheme + ':' + adj.id;
+      activeBrandColor = brandColors[key] || '#275864';
+    }
+  });
+
+  const config = {
+    theme: currentTheme,
+    adjustments: adjValues,
+    brandColor: activeBrandColor,
+    darkMode: darkMode,
+  };
+
+  const json = JSON.stringify(config, null, 2);
+  document.getElementById('jsonOutput').value = json;
+  document.getElementById('jsonModal').classList.add('show');
+  navigator.clipboard.writeText(json).catch(() => {});
+}
+
+function copyJson() {
+  navigator.clipboard.writeText(document.getElementById('jsonOutput').value);
+}
+
+function closeModal() {
+  document.getElementById('jsonModal').classList.remove('show');
+}
+
+// ──────────────────────────── INIT ────────────────────────────
+
+function renderAll() {
+  renderThemeList();
+  renderAdjustments();
+  renderLocked();
+  applyPreview();
+}
+
+// Set default adjustments
+const defaultP = THEMES[currentTheme];
+defaultP.adjustments.forEach(adj => { currentAdjustments[adj.id] = adj.options[0].value; });
+
+// Preload common fonts
+loadFont('Inter');
+loadFont('Cormorant Garamond');
+loadFont('JetBrains Mono');
+loadFont('Space Grotesk');
+loadFont('Fredoka');
+loadFont('Nunito');
+
+renderAll();
+</script>
+</body>
+</html>
