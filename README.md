@@ -17,9 +17,11 @@ rm -rf /tmp/claude-design-system
 ```
 your-project/
 └── .claude/
+    ├── commands/
+    │   └── design.md              ← /design 커맨드
     ├── skills/
-    │   └── design-system/     ← 스킬 + 템플릿
-    └── design-preview.html    ← 테마 셀렉터 (브라우저)
+    │   └── design-system/         ← 스킬 + 템플릿
+    └── design-preview.html        ← 테마 셀렉터 (브라우저)
 ```
 
 ---
@@ -29,13 +31,13 @@ your-project/
 Claude Code 채팅창에서:
 
 ```
-디자인 시스템 설정해줘
+/design
 ```
 
 ### 실행 흐름
 
 ```
-"디자인 시스템 설정해줘"
+/design 입력
     │
     ▼
 STEP 1  테마 셀렉터가 브라우저에서 자동으로 열림
