@@ -875,12 +875,16 @@ body { font-family: var(--font-body); background: #F0F0F0; color: #18181B; line-
 <!-- JSON modal -->
 <div class="json-modal" id="jsonModal">
   <div class="json-box">
-    <h3 style="margin-bottom:12px">설정 확정</h3>
-    <p style="font-size:13px;color:#71717A;margin-bottom:12px">아래 JSON이 클립보드에 복사되었습니다. Claude Code로 돌아가서 붙여넣어 주세요.</p>
+    <h3 style="margin-bottom:12px">✅ 디자인 설정 완료</h3>
+    <p style="font-size:13px;color:#71717A;margin-bottom:12px">
+      <strong>design-config.json</strong> 파일이 다운로드되었습니다.<br>
+      다운로드된 파일을 프로젝트의 <code style="background:#F4F4F5;padding:2px 6px;border-radius:4px;font-size:12px">.claude/</code> 폴더에 넣으면 Claude Code가 자동으로 감지하여 디자인을 적용합니다.
+    </p>
     <textarea id="jsonOutput" readonly></textarea>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
       <button class="header-btn header-btn-ghost" onclick="closeModal()" style="color:#71717A;border-color:#E4E4E7">닫기</button>
-      <button class="header-btn header-btn-confirm" onclick="copyJson()">📋 다시 복사</button>
+      <button class="header-btn header-btn-confirm" onclick="downloadJson()">💾 다시 다운로드</button>
+      <button class="header-btn" onclick="copyJson()" style="background:#18181B;color:white">📋 복사</button>
     </div>
   </div>
 </div>
@@ -1474,17 +1478,52 @@ function confirmDesign() {
     }
   });
 
+  // Include full CSS values for direct application
+  const resolvedVars = { ...p.vars };
+  // Apply adjustment overrides
+  p.adjustments.forEach(adj => {
+    const selected = adjValues[adj.id];
+    const option = adj.options.find(o => o.value === selected);
+    if (option && option.overrides) {
+      Object.assign(resolvedVars, option.overrides);
+    }
+  });
+  // Apply brand color override
+  if (activeBrandColor) {
+    resolvedVars.accent = activeBrandColor;
+    resolvedVars['accent-dim'] = activeBrandColor;
+  }
+
   const config = {
     theme: currentTheme,
+    themeLabel: p.label,
     adjustments: adjValues,
     brandColor: activeBrandColor,
     darkMode: darkMode,
+    locked: p.locked || [],
+    fonts: p.fonts || [],
+    cssVars: resolvedVars,
   };
 
   const json = JSON.stringify(config, null, 2);
   document.getElementById('jsonOutput').value = json;
   document.getElementById('jsonModal').classList.add('show');
-  navigator.clipboard.writeText(json).catch(() => {});
+
+  // Auto-download as file
+  downloadJson(json);
+}
+
+function downloadJson(jsonStr) {
+  const data = jsonStr || document.getElementById('jsonOutput').value;
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'design-config.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function copyJson() {
