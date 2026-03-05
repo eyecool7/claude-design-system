@@ -13,7 +13,6 @@ bash /tmp/claude-design-system/install.sh
 rm -rf /tmp/claude-design-system
 ```
 
-> **경로에 공백이 있으면 따옴표 필수**
 > ```bash
 > cd "/Users/name/My Projects/my-app"
 > bash /tmp/claude-design-system/install.sh
