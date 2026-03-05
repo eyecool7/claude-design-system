@@ -69,16 +69,23 @@ STEP 3  자동 생성
 
 ## 테마
 
-| 테마 | 설명 | 기본 모드 |
-|------|------|-----------|
-| **Tech Precision** | 데이터가 미학. 모노스페이스, 딥 다크, 그리드선 | Dark |
-| **Neon Flux** | 미래에서 온 UI. 네온 glow, 글래스모피즘 | Dark |
-| **Editorial Authority** | 절제된 권위감. 세리프 헤드라인, 여백, 하프톤 | Light |
-| **Organic Warm** | 손의 온기. 종이 질감, 크림 톤, 둥근 곡선 | Light |
-| **Luxury Minimal** | 침묵이 럭셔리. 극단적 여백, 얇은 세리프 | Light |
-| **Brutalist Raw** | 날것의 충격. Hard shadow, 굵은 border, 직각 | Light |
-| **Retro Analog** | 카세트테이프 향수. 빛바랜 색감, CRT 노이즈 | Light |
-| **Playful Pop** | 컬러풀한 팝아트. 둥근 모서리, 밝은 배경 | Light |
+<table>
+<tr>
+<td align="center"><strong>Tech Precision</strong><br><sub>Dark</sub><br><img src="assets/theme-tech-precision.png" width="280"></td>
+<td align="center"><strong>Neon Flux</strong><br><sub>Dark</sub><br><img src="assets/theme-neon-flux.png" width="280"></td>
+<td align="center"><strong>Editorial Authority</strong><br><sub>Light</sub><br><img src="assets/theme-editorial-authority.png" width="280"></td>
+</tr>
+<tr>
+<td align="center"><strong>Organic Warm</strong><br><sub>Light</sub><br><img src="assets/theme-organic-warm.png" width="280"></td>
+<td align="center"><strong>Luxury Minimal</strong><br><sub>Light</sub><br><img src="assets/theme-luxury-minimal.png" width="280"></td>
+<td align="center"><strong>Brutalist Raw</strong><br><sub>Light</sub><br><img src="assets/theme-brutalist-raw.png" width="280"></td>
+</tr>
+<tr>
+<td align="center"><strong>Retro Analog</strong><br><sub>Light</sub><br><img src="assets/theme-retro-analog.png" width="280"></td>
+<td align="center"><strong>Playful Pop</strong><br><sub>Light</sub><br><img src="assets/theme-playful-pop.png" width="280"></td>
+<td align="center"><strong>확정 → JSON 다운로드</strong><br><sub></sub><br><img src="assets/confirm-modal.png" width="280"></td>
+</tr>
+</table>
 
 각 테마는 **3가지 조정 옵션 + 브랜드색 오버라이드 + 다크모드**를 지원합니다.
 
