@@ -1,34 +1,54 @@
 #!/bin/bash
-# Claude Design System — installer
-# Usage: bash install.sh
+
+# Claude Design System — install.sh
+# Usage: bash /tmp/claude-design-system/install.sh
+# Run from your project root directory.
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$(pwd)"
 
-echo "🎨 Claude Design System 설치"
-echo "   대상: $TARGET_DIR"
+echo ""
+echo "🎨 Claude Design System 설치 중..."
+echo "   대상 경로: $TARGET_DIR"
 echo ""
 
-# 1. Copy skill
-mkdir -p "$TARGET_DIR/.claude/skills/design-system"
-cp "$SCRIPT_DIR/.claude/skills/design-system/SKILL.md" "$TARGET_DIR/.claude/skills/design-system/SKILL.md"
-echo "✅ SKILL.md → .claude/skills/design-system/"
-
-# 2. Copy design-preview.html
-cp "$SCRIPT_DIR/assets/design-preview.html" "$TARGET_DIR/.claude/design-preview.html"
-echo "✅ design-preview.html → .claude/"
-
-# 3. Copy templates
+# .claude 디렉토리 구조 생성
+mkdir -p "$TARGET_DIR/.claude/commands"
 mkdir -p "$TARGET_DIR/.claude/skills/design-system/templates"
-cp -r "$SCRIPT_DIR/templates/design-rules" "$TARGET_DIR/.claude/skills/design-system/templates/"
-echo "✅ templates/ → .claude/skills/design-system/templates/"
+
+# 스킬 복사
+cp -r "$SCRIPT_DIR/.claude/skills/design-system/." \
+      "$TARGET_DIR/.claude/skills/design-system/"
+
+echo "   ✓ design-system 스킬 설치"
+
+# /design 커맨드 복사
+cp "$SCRIPT_DIR/commands/design.md" \
+   "$TARGET_DIR/.claude/commands/design.md"
+
+echo "   ✓ /design 커맨드 설치"
+
+# design-preview.html 복사 (선택)
+if [ -f "$SCRIPT_DIR/assets/design-preview.html" ]; then
+  cp "$SCRIPT_DIR/assets/design-preview.html" \
+     "$TARGET_DIR/.claude/design-preview.html"
+  echo "   ✓ design-preview.html 설치"
+fi
 
 echo ""
-echo "🎉 설치 완료!"
+echo "✅ 설치 완료!"
 echo ""
-echo "사용법:"
-echo "  1. Claude Code에서: 디자인 시스템 설정해줘"
-echo "  2. 또는 브라우저에서 미리보기: open .claude/design-preview.html"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "  Claude Code 채팅창에서 실행:"
+echo ""
+echo "    /design"
+echo ""
+echo "  브라우저 미리보기 (선택):"
+echo ""
+echo "    open .claude/design-preview.html"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
