@@ -319,6 +319,24 @@ Playful:   Fredoka + Nunito + JetBrains Mono
 3. 다크모드 토글 확인 (.dark 클래스)
 ```
 
+#### C. 완료 안내
+
+모든 생성이 끝나면 사용자에게 다음을 출력한다:
+
+```
+✅ 디자인 시스템 적용 완료
+
+생성된 파일:
+  .claude/skills/design-rules/  (6개) — UI 생성 시 자동 참조
+  index.css                           — 테마 색상/폰트/간격
+  index.html                          — 웹폰트 링크
+
+🎯 이제 어떻게 되나요?
+
+1. UI 작업을 요청하면 선택한 테마 스타일로 자동 생성됩니다.
+2. 기존 코드에 테마가 안 먹히면 "기존 컴포넌트에 테마 적용해줘"라고 요청하세요.
+```
+
 ---
 
 ## Theme별 기본 CSS 값 (design-config.json 없을 때 참조)
