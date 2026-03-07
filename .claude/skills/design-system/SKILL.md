@@ -33,7 +33,6 @@ SKILL_ROOT = 이 SKILL.md가 있는 디렉토리
 
 에셋 파일 위치:
 - `design-preview.html`: `.claude/design-preview.html`
-- 템플릿: `[SKILL_ROOT]/templates/design-rules/[theme-name]/`
 
 ---
 
@@ -173,9 +172,7 @@ Theme: Organic Warm
 `.claude/skills/design-rules/` 디렉토리에 6개 파일을 생성한다.
 
 ```
-1. 선택된 Theme의 템플릿 파일 6개를 베이스로 읽는다
-   → [SKILL_ROOT]/templates/design-rules/[theme-name]/
-   (템플릿이 없으면 가장 유사한 기존 템플릿을 베이스로 사용)
+1. 이 SKILL.md의 "Theme별 기본 CSS 값"과 "조정 옵션"을 참조하여 생성
 
 2. design-config.json의 adjustments 값으로 오버라이드
 
